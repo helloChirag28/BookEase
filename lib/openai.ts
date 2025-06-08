@@ -1,8 +1,8 @@
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-});
+}) : null;
 
 export interface AITimePreference {
   preference: string;
@@ -18,6 +18,14 @@ export const generateTimeRecommendation = async ({
   date
 }: AITimePreference): Promise<{ time: string; reason: string }> => {
   try {
+    // If OpenAI is not configured, return demo fallback
+    if (!openai) {
+      return {
+        time: availableSlots[0] || '10:00',
+        reason: "Perfect timing for you!"
+      };
+    }
+
     const prompt = `You are an AI assistant for a booking system. A customer wants to book an appointment and needs help choosing the best time slot.
 
 Customer preference: ${preference}
